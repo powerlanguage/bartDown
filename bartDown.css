@@ -25,6 +25,18 @@ body {
   color: #da8c12;
 }
 
+.red {
+  color: #9b1818;
+}
+
+.green {
+  color: #2d8d13;
+}
+
+.blue {
+  color: #1b339b;
+}
+
 #lines {
   display: flex;
   flex-direction: column;
