@@ -1,17 +1,22 @@
+// Parse the URL search paramters into an object
+var urlParams = window.location.search.substring(1).split('&').reduce((params, urlParam) => {
+  let param = urlParam.split('=');
+  params[param[0]] = param[1];
+  return params;
+}, {});
 
-
-// Number of departures we want to display for each direction
-const limit = 3;
-const station = "woak"
-const minute_cutoff = 3;
-
-// TODO
-// Get station and other things from URL params
-// URLSearchParams()
+// Limit is the number of departures we want to display for each direction
+const limit = parseInt(urlParams.limit) || 3;
+const station = urlParams.station || "19th"
+const minute_cutoff = parseInt(urlParams.minute_cutoff) || 3;
 
 // TODO:
 // Have font size be related to number of stations
 // displayed
+
+// TODO:
+// Allow user to pick station from a dropdown form
+
 
 $.get(`http://api.bart.gov/api/etd.aspx?key=${API_KEY}&cmd=etd&orig=${station}&json=y`, bartDown);
 
