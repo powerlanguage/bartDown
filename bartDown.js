@@ -14,6 +14,10 @@ const minute_cutoff = parseInt(urlParams.minute_cutoff) || 3;
 // Have font size be related to number of stations
 // displayed
 
+var fontWidth = 100 / (limit * 1.4);
+
+$('body').css('font-size', `${fontWidth}vw`)
+
 // TODO:
 // Allow user to pick station from a dropdown form
 
