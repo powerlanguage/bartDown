@@ -4,7 +4,7 @@
 }
 
 body {
-  background: #222;
+  background: #000;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 20em;
   letter-spacing: 0.02em;
@@ -18,7 +18,7 @@ body {
 }
 
 .yellow {
-  color: #dfe123;
+  color: #c6c73d;
 }
 
 .orange {
@@ -35,6 +35,10 @@ body {
 
 .blue {
   color: #3e60f5;
+}
+
+.white {
+  color: #fff;
 }
 
 #lines {
