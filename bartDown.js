@@ -43,11 +43,11 @@ function bartDown(data) {
 
   // TODO:
   // filter out any destinations we aren't interested in.
-  // Distination is a parent of estimates, so needs to be done
+  // Destination is a parent of estimates, so needs to be done
   // above
 
   // Filter estimates that don't match criteria
-  estimates = estimates.filter(estimate => estimate.minutes > minute_cutoff);
+  estimates = estimates.filter(estimate => estimate.minutes >= minute_cutoff);
 
   // Transform 'Leaving' to 00 and ensure all times are double digits
   estimates.forEach(estimate => {
