@@ -5,9 +5,11 @@ var urlParams = window.location.search.substring(1).split('&').reduce((params, u
   return params;
 }, {});
 
-// Limit is the number of departures we want to display for each direction
+// number of trains to display in either direction
 const limit = parseInt(urlParams.limit) || 3;
+// station of origin abbreviation - https://api.bart.gov/docs/overview/abbrev.aspx
 const station = urlParams.station || "19th"
+// departure times below the cutoff will not be displayed
 const minute_cutoff = parseInt(urlParams.minute_cutoff) || 3;
 
 // TODO:
