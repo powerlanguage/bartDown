@@ -43,6 +43,9 @@ setInterval(() => {
 function bartDown(data) {
   console.log("updating...")
 
+  $('#disconnected').hide();
+  $('#lines').show();
+
   let directionCount = {
     'north': 0,
     'south': 0
@@ -82,6 +85,10 @@ function bartDown(data) {
   });
 }
 
+// Display an icon on error
 function logError(error) {
   console.log(error);
+  $('#lines').hide();
+  $('#disconnected img').css('width', `${fontWidth * 2}vw`);
+  $('#disconnected').show();
 }

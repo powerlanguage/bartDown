@@ -54,3 +54,9 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+#disconnected {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+}
