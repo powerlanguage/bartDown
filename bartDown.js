@@ -21,12 +21,24 @@ $('body').css('font-size', `${fontWidth}vw`)
 // TODO:
 // Allow user to pick station from a dropdown form
 
+async function fetchTimesAsync () {
+  // await response of fetch call
+  let response = await fetch('http://api.bart.gov/api/etd.aspx?key=MW9S-E7SL-26DU-VV8V&cmd=etd&orig=19th&json=y');
+  // only proceed once promise is resolved
+  let data = await response.json();
+  // only proceed once second promise is resolved
+  return data;
+}
 
-$.get(`http://api.bart.gov/api/etd.aspx?key=${API_KEY}&cmd=etd&orig=${station}&json=y`, bartDown);
+fetchTimesAsync()
+  .then(bartDown)
+  .catch(logError)
 
 setInterval(() => {
-  $.get(`http://api.bart.gov/api/etd.aspx?key=${API_KEY}&cmd=etd&orig=${station}&json=y`, bartDown);
-}, 30000);
+  fetchTimesAsync()
+    .then(bartDown)
+    .catch(logError)
+}, 10000);
 
 function bartDown(data) {
   console.log("updating...")
@@ -68,4 +80,8 @@ function bartDown(data) {
       directionCount[direction]++;
     }
   });
+}
+
+function logError(error) {
+  console.log(error);
 }
