@@ -1,14 +1,17 @@
 // Parse the URL search paramters into an object
-var urlParams = window.location.search.substring(1).split('&').reduce((params, urlParam) => {
-  let param = urlParam.split('=');
-  params[param[0]] = param[1];
-  return params;
-}, {});
+var urlParams = window.location.search
+  .substring(1)
+  .split('&')
+  .reduce((params, urlParam) => {
+    let param = urlParam.split('=');
+    params[param[0]] = param[1];
+    return params;
+  }, {});
 
 // number of trains to display in either direction
 const limit = parseInt(urlParams.limit) || 3;
 // station of origin abbreviation - https://api.bart.gov/docs/overview/abbrev.aspx
-const station = urlParams.station || "19th"
+const station = urlParams.station || '19th';
 // departure times below the cutoff will not be displayed
 const minute_cutoff = parseInt(urlParams.minute_cutoff) || 3;
 
@@ -18,14 +21,16 @@ const minute_cutoff = parseInt(urlParams.minute_cutoff) || 3;
 
 var fontWidth = 100 / (limit * 1.4);
 
-$('body').css('font-size', `${fontWidth}vw`)
+$('body').css('font-size', `${fontWidth}vw`);
 
 // TODO:
 // Allow user to pick station from a dropdown form
 
-async function fetchTimesAsync () {
+const BASE_URL = 'http://api.bart.gov/api/etd.aspx';
+
+async function fetchTimesAsync() {
   // await response of fetch call
-  let response = await fetch('http://api.bart.gov/api/etd.aspx?key=MW9S-E7SL-26DU-VV8V&cmd=etd&orig=19th&json=y');
+  let response = await fetch(`${BASE_URL}?key=${BART_API_KEY}&cmd=etd&orig=${station}&json=y`);
   // only proceed once promise is resolved
   let data = await response.json();
   // only proceed once second promise is resolved
@@ -34,23 +39,23 @@ async function fetchTimesAsync () {
 
 fetchTimesAsync()
   .then(bartDown)
-  .catch(logError)
+  .catch(logError);
 
 setInterval(() => {
   fetchTimesAsync()
     .then(bartDown)
-    .catch(logError)
+    .catch(logError);
 }, 10000);
 
 function bartDown(data) {
-  console.log("updating...")
+  console.log('updating...');
 
   $('#disconnected').hide();
   $('#lines').show();
 
   let directionCount = {
-    'north': 0,
-    'south': 0
+    north: 0,
+    south: 0,
   };
 
   // Get an array of estimated departures from the response data
@@ -64,12 +69,12 @@ function bartDown(data) {
   // above
 
   // Filter estimates that don't match criteria
-  estimates = estimates.filter(estimate => estimate.minutes >= minute_cutoff);
+  estimates = estimates.filter((estimate) => estimate.minutes >= minute_cutoff);
 
   // Transform 'Leaving' to 00 and ensure all times are double digits
-  estimates.forEach(estimate => {
-    estimate.minutes = estimate.minutes === "Leaving" ? "00" : estimate.minutes;
-    estimate.minutes = estimate.minutes.length < 2 ? "0" + estimate.minutes : estimate.minutes;
+  estimates.forEach((estimate) => {
+    estimate.minutes = estimate.minutes === 'Leaving' ? '00' : estimate.minutes;
+    estimate.minutes = estimate.minutes.length < 2 ? '0' + estimate.minutes : estimate.minutes;
   });
 
   // Sort departures by times
@@ -78,10 +83,12 @@ function bartDown(data) {
   // Remove existing estimates from DOM
   $('.line').empty();
 
-  estimates.forEach(estimate => {
+  estimates.forEach((estimate) => {
     var direction = estimate.direction.toLowerCase();
-    if(directionCount[direction] < limit) {
-      $(`#${direction}`).append(`<div class="estimate ${estimate.color.toLowerCase()}">${estimate.minutes}</div>`);
+    if (directionCount[direction] < limit) {
+      $(`#${direction}`).append(
+        `<div class="estimate ${estimate.color.toLowerCase()}">${estimate.minutes}</div>`,
+      );
       directionCount[direction]++;
     }
   });
