@@ -1,5 +1,4 @@
-// Parse the URL search paramters into an object
-var urlParams = window.location.search
+const urlParams = window.location.search
   .substring(1)
   .split('&')
   .reduce((params, urlParam) => {
@@ -9,95 +8,87 @@ var urlParams = window.location.search
   }, {});
 
 // number of trains to display in either direction
-const limit = parseInt(urlParams.limit) || 3;
+const MAX_TRAINS_PER_DIRECTION = parseInt(urlParams.limit) || 3;
 // station of origin abbreviation - https://api.bart.gov/docs/overview/abbrev.aspx
-const station = urlParams.station || '19th';
+const STATION_CODE = urlParams.station || '19th';
 // departure times below the cutoff will not be displayed
-const minute_cutoff = parseInt(urlParams.minute_cutoff) || 3;
+const MINUTE_CUTOFF = parseInt(urlParams.minute_cutoff) || 3;
+// How often to poll for updates
+const UPDATE_MS = 10000;
+// See https://api.bart.gov/docs/etd/etd.aspx
+const BASE_URL = 'http://api.bart.gov/api/etd.aspx';
 
-// TODO:
-// Have font size be related to number of stations
-// displayed
-
-var fontWidth = 100 / (limit * 1.4);
-
-$('body').css('font-size', `${fontWidth}vw`);
+// Scale content
+const fontWidth = 100 / (MAX_TRAINS_PER_DIRECTION * 1.4);
+document.body.style.fontSize = `${fontWidth}vw`;
 
 // TODO:
 // Allow user to pick station from a dropdown form
 
-const BASE_URL = 'http://api.bart.gov/api/etd.aspx';
+async function bartDown() {
+  const response = await fetch(
+    `${BASE_URL}?key=${BART_API_KEY}&cmd=etd&orig=${STATION_CODE}&json=y`,
+  );
 
-async function fetchTimesAsync() {
-  // await response of fetch call
-  let response = await fetch(`${BASE_URL}?key=${BART_API_KEY}&cmd=etd&orig=${station}&json=y`);
-  // only proceed once promise is resolved
-  let data = await response.json();
-  // only proceed once second promise is resolved
-  return data;
-}
+  const data = await response.json();
 
-fetchTimesAsync()
-  .then(bartDown)
-  .catch(logError);
+  // Get an array of estimated departures from the response data
+  const estimatesForStation = data.root.station[0].etd.reduce((acc, etd) => {
+    return acc.concat(etd.estimate);
+  }, []);
 
-setInterval(() => {
-  fetchTimesAsync()
-    .then(bartDown)
-    .catch(logError);
-}, 10000);
+  const estimates = estimatesForStation
+    // Filter estimates that don't match criteria
+    .filter((estimate) => estimate.minutes >= MINUTE_CUTOFF)
+    // Transform 'Leaving' to 00 and ensure all times are double digits
+    // Note that we're mutating here :P
+    .map((estimate) => {
+      estimate.minutes = estimate.minutes === 'Leaving' ? '00' : estimate.minutes;
+      estimate.minutes = estimate.minutes.length < 2 ? '0' + estimate.minutes : estimate.minutes;
+      return estimate;
+    })
+    // Sort departures from soonest to latest
+    .sort((a, b) => a.minutes - b.minutes);
 
-function bartDown(data) {
-  console.log('updating...');
+  // Hide the error state
+  document.getElementById('disconnected').style.display = 'none';
 
-  $('#disconnected').hide();
-  $('#lines').show();
+  // Remove existing estimates from DOM
+  Array.from(document.getElementsByClassName('estimate')).forEach((line) => {
+    line.remove();
+  });
 
   let directionCount = {
     north: 0,
     south: 0,
   };
 
-  // Get an array of estimated departures from the response data
-  var estimates = data.root.station[0].etd.reduce((acc, etd) => {
-    return acc.concat(etd.estimate);
-  }, []);
-
-  // TODO:
-  // filter out any destinations we aren't interested in.
-  // Destination is a parent of estimates, so needs to be done
-  // above
-
-  // Filter estimates that don't match criteria
-  estimates = estimates.filter((estimate) => estimate.minutes >= minute_cutoff);
-
-  // Transform 'Leaving' to 00 and ensure all times are double digits
+  // Add the new estimates to the DOM
   estimates.forEach((estimate) => {
-    estimate.minutes = estimate.minutes === 'Leaving' ? '00' : estimate.minutes;
-    estimate.minutes = estimate.minutes.length < 2 ? '0' + estimate.minutes : estimate.minutes;
-  });
+    const direction = estimate.direction.toLowerCase();
+    if (directionCount[direction] < MAX_TRAINS_PER_DIRECTION) {
+      document
+        .getElementById(direction)
+        .insertAdjacentHTML(
+          'beforeEnd',
+          `<div class="estimate ${estimate.color.toLowerCase()}">${estimate.minutes}</div>`,
+        );
 
-  // Sort departures by times
-  estimates.sort((a, b) => a.minutes - b.minutes);
-
-  // Remove existing estimates from DOM
-  $('.line').empty();
-
-  estimates.forEach((estimate) => {
-    var direction = estimate.direction.toLowerCase();
-    if (directionCount[direction] < limit) {
-      $(`#${direction}`).append(
-        `<div class="estimate ${estimate.color.toLowerCase()}">${estimate.minutes}</div>`,
-      );
       directionCount[direction]++;
     }
   });
 }
 
 // Display an icon on error
-function logError(error) {
+function displayErrorState(error) {
   console.log(error);
-  $('#lines').hide();
-  $('#disconnected img').css('width', `${fontWidth * 2}vw`);
-  $('#disconnected').show();
+  document.getElementById('disconnected').style.display = 'flex';
 }
+
+// Kick it off!
+bartDown().catch(displayErrorState);
+
+// Set up recurring call
+setInterval(() => {
+  bartDown().catch(displayErrorState);
+}, UPDATE_MS);
