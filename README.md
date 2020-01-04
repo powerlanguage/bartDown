@@ -13,6 +13,7 @@ _bartDown_ can be customized using the following url parameters:
 * `?station=woak` - [station of origin abbreviation](https://api.bart.gov/docs/overview/abbrev.aspx), default 19th St Oakland
 * `?limit=5` - number of trains to display in either direction, default 3
 * `?minute_cutoff=2` - departure times below the cutoff will not be displayed, default 3
+* You can chain multiple parameters together using `&` E.g. http://powerlanguage.co.uk/bartDown/?station=hayw&limit=5&minute_cutoff=5
 
 ## Misc:
 
