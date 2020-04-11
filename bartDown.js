@@ -16,7 +16,7 @@ const MINUTE_CUTOFF = parseInt(urlParams.minute_cutoff) || 3;
 // How often to poll for updates
 const UPDATE_MS = 10000;
 // See https://api.bart.gov/docs/etd/etd.aspx
-const BASE_URL = 'http://api.bart.gov/api/etd.aspx';
+const BASE_URL = 'https://api.bart.gov/api/etd.aspx';
 
 // Scale content
 const fontWidth = 100 / (MAX_TRAINS_PER_DIRECTION * 1.4);
